@@ -1,0 +1,14 @@
+{
+  "name": "android-songwriting-tools",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "sync": "node scripts/sync-apps.mjs"
+  },
+  "dependencies": {
+    "astro": "^7.4.0"
+  }
+}

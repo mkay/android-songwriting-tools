@@ -1,0 +1,10 @@
+{
+  "repo": "CrystalBall",
+  "release": {
+    "tag": "v0.5",
+    "date": "2026-08-23"
+  },
+  "listing": true,
+  "title": "Crystal Ball",
+  "short": "Detects guitar chords and combines them into song sheets."
+}

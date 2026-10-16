@@ -1,0 +1,10 @@
+{
+  "repo": "PocketProse",
+  "release": {
+    "tag": "v0.2.2",
+    "date": "2026-09-15"
+  },
+  "listing": true,
+  "title": "Pocket Prose",
+  "short": "A writing app for a folder of Markdown notes, filed by tag."
+}

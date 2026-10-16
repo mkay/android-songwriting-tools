@@ -1,0 +1,10 @@
+{
+  "repo": "TitleTrack",
+  "release": {
+    "tag": "v0.5",
+    "date": "2026-10-14"
+  },
+  "listing": true,
+  "title": "Title Track",
+  "short": "A recorder for music memos."
+}

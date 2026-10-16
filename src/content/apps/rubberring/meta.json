@@ -1,0 +1,10 @@
+{
+  "repo": "RubberRing",
+  "release": {
+    "tag": "v0.13",
+    "date": "2026-10-12"
+  },
+  "listing": true,
+  "title": "Rubber Ring",
+  "short": "A looper for practicing song parts."
+}

@@ -1,0 +1,659 @@
+---
+import { Image } from 'astro:assets';
+import AppSection from '../components/AppSection.astro';
+import { apps } from '../lib/apps';
+
+const workflow = apps.filter((a) => a.row === 'workflow');
+const words = apps.filter((a) => a.row === 'words');
+const tint = (a: (typeof apps)[number]) => `--l:${a.colors.text.light};--d:${a.colors.text.dark}`;
+
+const title = 'Android Songwriting Tools';
+const description =
+  'Free, open-source Android apps for songwriters: capture your ideas, find the chords, play along and practice, manage your takes, and find the words.';
+const base = import.meta.env.BASE_URL;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={new URL(base, Astro.site)} />
+    <link rel="icon" href={`${base}favicon.svg`} type="image/svg+xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={new URL(base, Astro.site)} />
+    <!-- Before first paint, so sections that will fade in never flash in place
+         first. Without JS or an observer they simply stay visible. -->
+    <script is:inline>
+      if ('IntersectionObserver' in window) document.documentElement.classList.add('reveal');
+    </script>
+  </head>
+  <body>
+    <main>
+      <header class="hero">
+        <h1>
+          Android Songwriting Tools<span class="dots" aria-hidden="true">
+            {apps.map((a) => <i style={tint(a)} />)}
+          </span>
+        </h1>
+        <p class="lead">
+          Small apps for the songwriting that happens away from the desk: capture your ideas, find the chords, play along and practice, manage your takes, and find the words.
+        </p>
+        <ul class="facts">
+          <li>Free and open source, GPL-3.0</li>
+          <li>No ads, no trackers</li>
+          <li>No network access</li>
+        </ul>
+      </header>
+
+      <nav class="flow" aria-label="The apps">
+        <ol>
+          {workflow.map((a, i) => (
+            <li style={tint(a)}>
+              <a href={`#${a.slug}`}>
+                <span class="icon"><Image src={a.icon} alt="" width={80} height={80} /></span>
+                <span class="flow-text">
+                  <span class="flow-step"><span class="num">{String(i + 1).padStart(2, '0')}</span> {a.step}</span>
+                  <span class="flow-name">{a.title}</span>
+                </span>
+              </a>
+            </li>
+          ))}
+        </ol>
+        <ul class="words">
+          {words.map((a) => (
+            <li style={tint(a)}>
+              <a href={`#${a.slug}`}>
+                <span class="icon"><Image src={a.icon} alt="" width={80} height={80} /></span>
+                <span class="flow-text">
+                  <span class="flow-step">Alongside · {a.step}</span>
+                  <span class="flow-name">{a.title}</span>
+                </span>
+                <span class="flow-short">{a.short}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      {workflow.map((app, i) => <AppSection app={app} number={i + 1} eager={i === 0} />)}
+
+      {words.length > 0 && (
+        <div class="interlude" role="presentation">
+          <span>Alongside</span>
+        </div>
+      )}
+
+      {words.map((app) => <AppSection app={app} />)}
+
+      <footer>
+        <p>
+          Made with <a href="https://astro.build">Astro</a> · <a href="https://github.com/mkay">github.com/mkay</a>
+        </p>
+      </footer>
+    </main>
+
+    <!-- One viewer for every screenshot. Without the script each link opens its
+         image on a page of its own, where the browser zooms and pans it. -->
+    <dialog id="viewer" aria-label="Screenshot">
+      <img alt="" />
+    </dialog>
+
+    <script>
+      const viewer = document.getElementById('viewer') as HTMLDialogElement | null;
+      const img = viewer?.querySelector('img');
+      if (viewer && img && viewer.showModal) {
+        document.addEventListener('click', (event) => {
+          const link = (event.target as Element).closest<HTMLAnchorElement>('a[data-zoom]');
+          if (!link) return;
+          event.preventDefault();
+          img.src = link.href;
+          img.alt = link.querySelector('img')?.alt ?? '';
+          viewer.showModal();
+        });
+        // The dialog is only a frame: a click on it, or on its backdrop, is outside the image.
+        viewer.addEventListener('click', () => viewer.close());
+      }
+
+      // Each app section rises into place the first time it scrolls into view.
+      if (document.documentElement.classList.contains('reveal')) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (!entry.isIntersecting) continue;
+              entry.target.classList.add('in');
+              observer.unobserve(entry.target);
+            }
+          },
+          { rootMargin: '0px 0px -10% 0px' },
+        );
+        document.querySelectorAll('.app').forEach((section) => observer.observe(section));
+      }
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --bg: #fbfbfd;
+    --fg: #14161a;
+    --muted: #5c6270;
+    --line: #e4e5ea;
+    /* Behind a screenshot while it loads. */
+    --tile: #f4f5f8;
+    --shot-edge: rgba(0, 0, 0, 0.08);
+    --radius: 22px;
+    --wash: 0.32;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0e1013;
+      --fg: #f2f3f5;
+      --muted: #9aa1ae;
+      --line: #24272e;
+      --tile: #1d2027;
+      --shot-edge: rgba(255, 255, 255, 0.08);
+      --wash: 0.22;
+    }
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  body {
+    margin: 0;
+    padding: 4rem 1rem 3rem;
+    background: var(--bg);
+    color: var(--fg);
+    font: 400 16px/1.6 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-wrap: pretty;
+    overflow-x: hidden;
+  }
+
+  /* The app colours, blurred into a wash behind the top of the page. */
+  body::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 46rem;
+    background:
+      radial-gradient(28rem 20rem at 18% 10%, #f59e0b, transparent 70%),
+      radial-gradient(26rem 20rem at 42% 0%, #919ac5, transparent 70%),
+      radial-gradient(26rem 20rem at 66% 12%, #a62120, transparent 70%),
+      radial-gradient(28rem 20rem at 88% 2%, #64748b, transparent 70%),
+      radial-gradient(40rem 14rem at 50% 70%, #c99681, transparent 70%);
+    filter: blur(60px) saturate(1.3);
+    opacity: var(--wash);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  main {
+    width: 100%;
+    max-width: 68rem;
+    margin: 0 auto;
+  }
+
+  a {
+    color: inherit;
+  }
+
+  .num {
+    font-family: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+    font-size: 0.85em;
+    letter-spacing: 0.02em;
+    opacity: 0.7;
+  }
+
+  /* ---- Hero ---- */
+
+  .hero {
+    max-width: 44rem;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  h1 {
+    margin: 0 0 1rem;
+    font-size: clamp(2.25rem, 7vw, 3.75rem);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 1.05;
+  }
+
+  /* The full stop of the title, once per app, in each app's colour. */
+  .dots {
+    display: inline-flex;
+    gap: 0.06em;
+    margin-left: 0.08em;
+  }
+
+  .dots i {
+    width: 0.17em;
+    height: 0.17em;
+    border-radius: 50%;
+    background: var(--l);
+  }
+
+  .hero .lead {
+    margin: 0 auto;
+    max-width: 36rem;
+    font-size: 1.125rem;
+    color: var(--muted);
+  }
+
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.875rem;
+  }
+
+  .facts li {
+    padding: 0.3rem 0.8rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--bg) 70%, transparent);
+  }
+
+  /* ---- The four steps ---- */
+
+  .flow ol {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin: 3.5rem 0 0.75rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .flow a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    height: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--bg) 80%, transparent);
+    text-decoration: none;
+    transition: border-color 0.15s;
+  }
+
+  .flow a:hover,
+  .flow a:focus-visible {
+    border-color: var(--l);
+  }
+
+  .flow .icon {
+    flex: none;
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .flow-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+    min-width: 0;
+  }
+
+  .flow-step {
+    font-size: 0.8125rem;
+    color: var(--muted);
+  }
+
+  .flow-name {
+    font-weight: 700;
+    color: var(--l);
+  }
+
+  /* The second row: one tile across the width, with room for what it is. */
+  .flow .words {
+    margin: 0 0 1rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .flow .words a {
+    padding-right: 1.25rem;
+  }
+
+  .flow-short {
+    margin-left: auto;
+    padding-left: 1.5rem;
+    font-size: 0.9375rem;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  @media (max-width: 40rem) {
+    .flow-short {
+      display: none;
+    }
+  }
+
+  @media (max-width: 52rem) {
+    .flow ol {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 26rem) {
+    .flow ol {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* ---- An app ---- */
+
+  /* The synced icons are the finished launcher renders, shape included. */
+  .icon img {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .app {
+    --text: var(--text-l);
+    --fill: var(--fill-l);
+    --on-fill: var(--on-l);
+    padding: 4.5rem 0 0;
+    scroll-margin-top: 1rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .app {
+      --text: var(--text-d);
+      --fill: var(--fill-d);
+      --on-fill: var(--on-d);
+    }
+
+    .flow li,
+    .dots i {
+      --l: var(--d);
+    }
+  }
+
+  /* fadeInUp on first scroll into view; `.in` is set by the observer. */
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal .app {
+      opacity: 0;
+      transform: translateY(5rem);
+      transition:
+        opacity 1.1s ease-out,
+        transform 1.1s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+
+    .reveal .app.in {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .app + .app {
+    margin-top: 4.5rem;
+    border-top: 1px solid var(--line);
+  }
+
+  /* Between the workflow and the second row, in place of the usual rule. */
+  .interlude {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 5rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .interlude::before,
+  .interlude::after {
+    content: '';
+    flex: 1;
+    border-top: 1px solid var(--line);
+  }
+
+  .interlude + .app {
+    padding-top: 2.5rem;
+  }
+
+  .app-text {
+    max-width: 40rem;
+  }
+
+  .step {
+    margin: 0 0 1rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .title-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .title-row .icon {
+    flex: none;
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: clamp(1.875rem, 5vw, 2.5rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+
+  h2 .dot {
+    color: var(--text);
+  }
+
+  .app .lead {
+    margin: 1rem 0 0;
+    font-size: 1.125rem;
+  }
+
+  .highlights {
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+    color: var(--muted);
+  }
+
+  .highlights li {
+    position: relative;
+    padding-left: 1.25rem;
+  }
+
+  .highlights li + li {
+    margin-top: 0.35rem;
+  }
+
+  .highlights li::before {
+    content: '';
+    position: absolute;
+    left: 0.15rem;
+    top: 0.62em;
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: var(--text);
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1.75rem 0 0;
+  }
+
+  .links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.1rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: border-color 0.15s, filter 0.15s;
+  }
+
+  .links a:hover {
+    border-color: var(--text);
+  }
+
+  .links a.primary {
+    border-color: var(--fill);
+    background: var(--fill);
+    color: var(--on-fill);
+  }
+
+  .links a.primary:hover {
+    filter: brightness(1.1);
+  }
+
+  .links a:focus-visible,
+  .shots:focus-visible,
+  .shot:focus-visible {
+    outline: 3px solid var(--text);
+    outline-offset: 3px;
+  }
+
+  .glyph {
+    width: 1.1em;
+    height: 1.1em;
+    fill: currentColor;
+  }
+
+  .release {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.5rem;
+    margin: 1rem 0 0;
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+
+  .release a {
+    text-decoration: none;
+  }
+
+  .release a:hover {
+    text-decoration: underline;
+  }
+
+  .release .note {
+    flex-basis: 100%;
+  }
+
+  /*
+   * Screenshots in a row at one height, so a single phone and a two-phone
+   * composite sit side by side. The row scrolls sideways when it outgrows the
+   * page, snapping to each shot.
+   */
+  .shots {
+    display: flex;
+    gap: 1rem;
+    margin: 2.5rem -1rem 0;
+    padding: 0.25rem 1rem 1rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 0 1rem;
+    scrollbar-width: thin;
+    /* Fades the last shot into the edge, so a row that scrolls looks like one. */
+    mask-image: linear-gradient(to right, #000 calc(100% - 3rem), transparent);
+  }
+
+  .shot {
+    flex: none;
+    scroll-snap-align: start;
+    border-radius: 18px;
+    cursor: zoom-in;
+  }
+
+  .shot img {
+    display: block;
+    height: min(30rem, 62vh);
+    width: auto;
+    border-radius: 18px;
+    border: 1px solid var(--shot-edge);
+    background: var(--tile);
+  }
+
+  /* ---- Viewer ---- */
+
+  dialog:not([open]) {
+    display: none;
+  }
+
+  dialog {
+    max-width: 95vw;
+    max-height: 95vh;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: zoom-out;
+  }
+
+  dialog::backdrop {
+    background: rgba(0, 0, 0, 0.8);
+  }
+
+  dialog img {
+    display: block;
+    max-width: 95vw;
+    max-height: 95vh;
+    width: auto;
+    height: auto;
+    border-radius: 18px;
+  }
+
+  /* ---- Footer ---- */
+
+  footer {
+    margin-top: 5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--line);
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+
+  footer a {
+    text-decoration: none;
+  }
+
+  footer a:hover {
+    text-decoration: underline;
+  }
+</style>
